@@ -75,8 +75,8 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 }
 
 func (s ParcelStore) SetStatus(number int, status string) error {
-	updateQuery := "update parcel set status = ? where number = ? and status = ?"
-	_, err := s.db.Exec(updateQuery, status, number, ParcelStatusRegistered)
+	updateQuery := "update parcel set status = :status where number = :number"
+	_, err := s.db.Exec(updateQuery, sql.Named("status", status), sql.Named("number", number))
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -86,8 +86,11 @@ func (s ParcelStore) SetStatus(number int, status string) error {
 }
 
 func (s ParcelStore) SetAddress(number int, address string) error {
-	updateQuery := "update parcel set address = :address where number = :number"
-	_, err := s.db.Exec(updateQuery, sql.Named("address", address), sql.Named("number", number))
+	updateQuery := "update parcel set address = :address where number = :number and status = :status"
+	_, err := s.db.Exec(updateQuery,
+		sql.Named("address", address),
+		sql.Named("number", number),
+		sql.Named("status", ParcelStatusRegistered))
 	if err != nil {
 		fmt.Println(err)
 		return err
