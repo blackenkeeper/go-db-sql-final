@@ -1,9 +1,5 @@
 name: parcels_pipline
-on:
-  push:
-    branches:
-      - 'main'
-      - 'cicd_usage'
+on: push
 
 env:
   GOOS: linux
