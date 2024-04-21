@@ -32,7 +32,9 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db")
-	require.Error(t, err)
+	if err != nil {
+		require.NoError(t, err)
+	}
 	defer db.Close()
 
 	store := NewParcelStore(db)

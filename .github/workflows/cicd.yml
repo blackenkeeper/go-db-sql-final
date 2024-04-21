@@ -1,0 +1,52 @@
+name: parcels_pipline
+on: push
+
+env:
+  GOOS: linux
+  GOARCH: amd64
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: golang:1.21.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Using vet before testing
+        run: go vet ./...
+
+      - name: Run file 'parcel_test.go'
+        run: go test
+
+  deploy:
+    name: Pushing Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    needs: test
+    if: startsWith(github.ref, 'refs/tags')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCES_TOKEN }}
+
+      - name: Extract tags from Docker image
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: deathlaughfear/parcels_tracker
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
